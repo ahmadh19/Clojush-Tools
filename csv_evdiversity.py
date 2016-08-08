@@ -54,7 +54,8 @@ def mean(nums):
     return sum(nums) / float(len(nums))
 
 max_gen = 0
-def getBehavioralDiversities(outputDirectory):
+
+def getErrorVectorDiversities(outputDirectory):
     global max_gen
 
     i = 0
@@ -64,6 +65,7 @@ def getBehavioralDiversities(outputDirectory):
     dirList = os.listdir(outputDirectory)
 
     bd_list_per_gen = []
+    evd_list_per_gen = []
 
     while (outputFilePrefix + str(i) + outputFileSuffix) in dirList:
     
@@ -82,6 +84,7 @@ def getBehavioralDiversities(outputDirectory):
                     max_gen = gen
                 while len(bd_list_per_gen) <= gen:
                     bd_list_per_gen.append([])
+                    evd_list_per_gen.append([])
 
             if line.startswith("SUCCESS"):
                 done = "SUCCESS"
@@ -94,21 +97,25 @@ def getBehavioralDiversities(outputDirectory):
             if line.startswith("Behavioral diversity:"):
                 bd = float(line.split()[-1])
                 bd_list_per_gen[gen].append(bd)
+                
+            if line.startswith("Error (vector) diversity:"):
+                evd = float(line.split()[-1])
+                evd_list_per_gen[gen].append(evd)
             
         i += 1
 
-    return [mean(x) for x in bd_list_per_gen]
+    return [mean(x) for x in evd_list_per_gen]
 
 
 print "generation," + str([n for (n,d) in dirs]).replace(" ","").replace("]","").replace("[","").replace("'","")
 
-dir_bd_lists = [getBehavioralDiversities(d) for (n,d) in dirs]
+dir_evd_lists = [getErrorVectorDiversities(d) for (n,d) in dirs]
 for g in range(max_gen+1):
     out_str = str(g) + ","
-    for bd_list in dir_bd_lists:
+    for evd_list in dir_evd_lists:
         try:
-            bd = "%0.3f," % bd_list[g]
+            evd = "%0.3f," % evd_list[g]
         except:
-            bd = ","
-        out_str += bd
+            evd = ","
+        out_str += evd
     print out_str[:-1]
